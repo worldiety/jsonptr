@@ -119,11 +119,11 @@ func TestHelper(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if v, _ := AsFloat(obj, "/details/id"); v != 123 {
+	if v, _ := AsFloat64(obj, "/details/id"); v != 123 {
 		t.Fatal("unexpected", v)
 	}
 
-	if v, _ := AsFloat(obj, "/details/num"); v != 3.14 {
+	if v, _ := AsFloat64(obj, "/details/num"); v != 3.14 {
 		t.Fatal("unexpected", v)
 	}
 
@@ -147,7 +147,10 @@ func TestHelper(t *testing.T) {
 		t.Fatal("unexpected", v)
 	}
 
-	arr, _ := AsFloatArray(obj, "/details/nested/list")
+	MustInt(AsInt(obj, "/details/flag"))
+	TryInt(AsInt(obj, "/details/flag"))
+
+	arr, _ := AsFloat64Array(obj, "/details/nested/list")
 	if len(arr) != 3 {
 		t.Fatal("unexpected len", len(arr))
 	}
@@ -155,7 +158,7 @@ func TestHelper(t *testing.T) {
 		t.Fatal("unexpected", arr[1])
 	}
 
-	if v, _ := AsFloatArray(obj, "/details/nested"); len(v) != 1 {
+	if v, _ := AsFloat64Array(obj, "/details/nested"); len(v) != 1 {
 		t.Fatal("unexpected", v)
 	}
 

@@ -164,7 +164,23 @@ func AsString(objOrArr interface{}, ptr JSONPointer) (string, error) {
 	return toString(val), err
 }
 
-// AsFloat takes a JSONPointer and tries to interpret the result as a float.
+// TryString is a go-like "try macro" pattern. Returns the empty string in case of error, otherwise v.
+func TryString(v string, err error) string {
+	if err != nil {
+		return ""
+	}
+	return v
+}
+
+// MustString is a go-like "expect macro" pattern. Panics in case of error, otherwise returns v.
+func MustString(v string, err error) string {
+	if err != nil {
+		panic(err)
+	}
+	return v
+}
+
+// AsFloat64 takes a JSONPointer and tries to interpret the result as a float.
 // The following rules are applied:
 //  * numbers are converted to a float
 //  * booleans are converted to 1|0
@@ -174,16 +190,63 @@ func AsString(objOrArr interface{}, ptr JSONPointer) (string, error) {
 //  * String() method is invoked, if available, and output parsed. Returns NaN if not parsable.
 //  * Anything else is converted using sprintf and %v directive and tried to be parsed. Returns NaN if not parsable.
 //  * only evaluation errors are returned as errors.
-func AsFloat(objOrArr interface{}, ptr JSONPointer) (float64, error) {
+func AsFloat64(objOrArr interface{}, ptr JSONPointer) (float64, error) {
 	val, err := Evaluate(objOrArr, ptr)
 	return toFloat64(val), err
+}
+
+// TryFloat64 is a go-like "try macro" pattern. Returns NaN in case of error, otherwise v.
+func TryFloat64(v float64, err error) float64 {
+	if err != nil {
+		return math.NaN()
+	}
+	return v
+}
+
+// MustFloat64 is a go-like "expect macro" pattern. Panics in case of error, otherwise returns v.
+func MustFloat64(v float64, err error) float64 {
+	if err != nil {
+		panic(err)
+	}
+	return v
+}
+
+// AsFloat32 takes a JSONPointer and tries to interpret the result as a float.
+// The following rules are applied:
+//  * numbers are converted to a float
+//  * booleans are converted to 1|0
+//  * null is converted NaN
+//  * a non-resolvable value, returns also NaN
+//  * arrays and objects are converted to NaN
+//  * String() method is invoked, if available, and output parsed. Returns NaN if not parsable.
+//  * Anything else is converted using sprintf and %v directive and tried to be parsed. Returns NaN if not parsable.
+//  * only evaluation errors are returned as errors.
+func AsFloat32(objOrArr interface{}, ptr JSONPointer) (float32, error) {
+	val, err := Evaluate(objOrArr, ptr)
+	return float32(toFloat64(val)), err
+}
+
+// TryFloat32 is a go-like "try macro" pattern. Returns +Inf in case of error, otherwise v.
+func TryFloat32(v float32, err error) float32 {
+	if err != nil {
+		return float32(math.Inf(+1))
+	}
+	return v
+}
+
+// MustFloat32 is a go-like "expect macro" pattern. Panics in case of error, otherwise returns v.
+func MustFloat32(v float32, err error) float32 {
+	if err != nil {
+		panic(err)
+	}
+	return v
 }
 
 // AsInt takes a JSONPointer and tries to interpret the result as an int using the rules of AsFloat.
 // NaN is treated as 0.
 //  * only evaluation errors are returned as errors.
 func AsInt(objOrArr interface{}, ptr JSONPointer) (int, error) {
-	f, err := AsFloat(objOrArr, ptr)
+	f, err := AsFloat64(objOrArr, ptr)
 	if err != nil {
 		return 0, err
 	}
@@ -191,6 +254,82 @@ func AsInt(objOrArr interface{}, ptr JSONPointer) (int, error) {
 		return 0, nil
 	}
 	return int(f), nil
+}
+
+// TryInt is a go-like "try macro" pattern. Returns 0 in case of error, otherwise v.
+func TryInt(v int, err error) int {
+	if err != nil {
+		return 0
+	}
+	return v
+}
+
+// MustInt is a go-like "expect macro" pattern. Panics in case of error, otherwise returns v.
+func MustInt(v int, err error) int {
+	if err != nil {
+		panic(err)
+	}
+	return v
+}
+
+// AsInt32 takes a JSONPointer and tries to interpret the result as an int using the rules of AsFloat.
+// NaN is treated as 0.
+//  * only evaluation errors are returned as errors.
+func AsInt32(objOrArr interface{}, ptr JSONPointer) (int32, error) {
+	f, err := AsFloat64(objOrArr, ptr)
+	if err != nil {
+		return 0, err
+	}
+	if math.IsNaN(f) {
+		return 0, nil
+	}
+	return int32(f), nil
+}
+
+// TryInt32 is a go-like "try macro" pattern. Returns 0 in case of error, otherwise v.
+func TryInt32(v int32, err error) int32 {
+	if err != nil {
+		return 0
+	}
+	return v
+}
+
+// MustInt32 is a go-like "expect macro" pattern. Panics in case of error, otherwise returns v.
+func MustInt32(v int32, err error) int32 {
+	if err != nil {
+		panic(err)
+	}
+	return v
+}
+
+// AsInt64 takes a JSONPointer and tries to interpret the result as an int using the rules of AsFloat.
+// NaN is treated as 0.
+//  * only evaluation errors are returned as errors.
+func AsInt64(objOrArr interface{}, ptr JSONPointer) (int64, error) {
+	f, err := AsFloat64(objOrArr, ptr)
+	if err != nil {
+		return 0, err
+	}
+	if math.IsNaN(f) {
+		return 0, nil
+	}
+	return int64(f), nil
+}
+
+// TryInt32 is a go-like "try macro" pattern. Returns 0 in case of error, otherwise v.
+func TryInt64(v int64, err error) int64 {
+	if err != nil {
+		return 0
+	}
+	return v
+}
+
+// MustInt32 is a go-like "expect macro" pattern. Panics in case of error, otherwise returns v.
+func MustInt64(v int64, err error) int64 {
+	if err != nil {
+		panic(err)
+	}
+	return v
 }
 
 // AsBool takes a JSONPointer and tries to interpret the result as a bool.
@@ -207,6 +346,22 @@ func AsBool(objOrArr interface{}, ptr JSONPointer) (bool, error) {
 		return false, nil
 	}
 	return b, nil
+}
+
+// TryBool is a go-like "try macro" pattern. Returns false in case of error, otherwise v.
+func TryBool(v bool, err error) bool {
+	if err != nil {
+		return false
+	}
+	return v
+}
+
+// MustBool is a go-like "expect macro" pattern. Panics in case of error, otherwise returns v.
+func MustBool(v bool, err error) bool {
+	if err != nil {
+		panic(err)
+	}
+	return v
 }
 
 // AsArray evaluates the JSONPointer and unwraps either []interface{} or *[]interface{} slices. Any other slice
@@ -238,9 +393,69 @@ func AsArray(objOrArr interface{}, ptr JSONPointer) ([]interface{}, error) {
 	}
 }
 
-// AsFloatArray evaluates the JSONPointer and tries to interpret any slice value as float (see AsFloat) for rules
+// TryArray is a go-like "try macro" pattern. Returns nil in case of error, otherwise v.
+func TryArray(v []interface{}, err error) []interface{} {
+	if err != nil {
+		return nil
+	}
+	return v
+}
+
+// MustArray is a go-like "expect macro" pattern. Panics in case of error, otherwise returns v.
+func MustArray(v []interface{}, err error) []interface{} {
+	if err != nil {
+		panic(err)
+	}
+	return v
+}
+
+// AsArray evaluates the JSONPointer and unwraps map[string]interface{}. Any other slice
+// types are unboxed to []interface{}. If value is not a map type at all, the value is inserted into a one-element
+// map with the key value.
 //  * only evaluation errors are returned as errors.
-func AsFloatArray(objOrArr interface{}, ptr JSONPointer) ([]float64, error) {
+func AsObject(objOrArr interface{}, ptr JSONPointer) (map[string]interface{}, error) {
+	val, err := Evaluate(objOrArr, ptr)
+	if err != nil {
+		return nil, err
+	}
+	switch t := val.(type) {
+	case map[string]interface{}:
+		return t, nil
+	default:
+		s := reflect.ValueOf(t)
+		if s.Kind() != reflect.Map {
+			return map[string]interface{}{"value": t}, nil
+		}
+
+		ret := make(map[string]interface{})
+		for _, _ = range s.MapKeys() {
+			//ret[k] = s.
+			panic("fix me")
+		}
+
+		return ret, nil
+	}
+}
+
+// TryObject is a go-like "try macro" pattern. Returns empty map in case of error, otherwise v.
+func TryObject(v map[string]interface{}, err error) map[string]interface{} {
+	if err != nil {
+		return nil
+	}
+	return v
+}
+
+// MustObject is a go-like "expect macro" pattern. Panics in case of error, otherwise returns v.
+func MustObject(v map[string]interface{}, err error) map[string]interface{} {
+	if err != nil {
+		panic(err)
+	}
+	return v
+}
+
+// AsFloat64Array evaluates the JSONPointer and tries to interpret any slice value as float (see AsFloat) for rules
+//  * only evaluation errors are returned as errors.
+func AsFloat64Array(objOrArr interface{}, ptr JSONPointer) ([]float64, error) {
 	slice, err := AsArray(objOrArr, ptr)
 	if err != nil {
 		return nil, err
@@ -264,6 +479,22 @@ func AsStringArray(objOrArr interface{}, ptr JSONPointer) ([]string, error) {
 		res[i] = toString(v)
 	}
 	return res, nil
+}
+
+// TryStringArray is a go-like "try macro" pattern. Returns nil in case of error, otherwise v.
+func TryStringArray(v []string, err error) []string {
+	if err != nil {
+		return nil
+	}
+	return v
+}
+
+// MustStringArray is a go-like "expect macro" pattern. Panics in case of error, otherwise returns v.
+func MustStringArray(v []string, err error) []string {
+	if err != nil {
+		panic(err)
+	}
+	return v
 }
 
 // AsIntArray evaluates the JSONPointer and uses the AsFloatArray conversion rules but truncates to int.
