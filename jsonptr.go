@@ -50,6 +50,13 @@ func Evaluate(objOrArr interface{}, ptr JSONPointer) (interface{}, error) {
 				return nil, fmt.Errorf("key '%s' not found:\n%s", token, evalMsg(tIdx, tokens, keysAsSlice(t)))
 			}
 
+		case map[string]string: //TODO we should do something with reflect to also work on base types directly
+			if val, ok := t[token]; ok {
+				root = val
+			} else {
+				root = nil
+				return nil, fmt.Errorf("key '%s' not found:\n%s", token, evalMsg(tIdx, tokens, keysAsSlice(t)))
+			}
 		case *map[string]interface{}:
 			root = *t
 			goto typeSwitch
@@ -71,7 +78,7 @@ func Evaluate(objOrArr interface{}, ptr JSONPointer) (interface{}, error) {
 	return root, nil
 }
 
-func keysAsSlice(m map[string]interface{}) []string {
+func keysAsSlice[T any](m map[string]T) []string {
 	res := make([]string, len(m))[0:0]
 	for k := range m {
 		res = append(res, k)
