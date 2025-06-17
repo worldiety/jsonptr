@@ -3,7 +3,9 @@ package jsonptr
 import (
 	"encoding/json"
 	"fmt"
+	"iter"
 	"log/slog"
+	"sort"
 	"strconv"
 )
 
@@ -68,14 +70,53 @@ func (n Number) Float64() float64 {
 	return float64(n)
 }
 
-type Obj map[string]Value
+type Obj struct {
+	m map[string]Value
+}
 
-func (Obj) value() {}
+func (o *Obj) Len() int {
+	return len(o.m)
+}
 
-func (Obj) objOrArr() {}
+func (o *Obj) Keys() []string {
+	res := make([]string, len(o.m))[0:0]
+	for k := range o.m {
+		res = append(res, k)
+	}
 
-func (o Obj) String() string {
-	buf, err := json.MarshalIndent(o, "", "  ")
+	sort.Strings(res)
+	return res
+}
+
+func (o *Obj) All() iter.Seq2[string, Value] {
+	return func(yield func(string, Value) bool) {
+		for k, v := range o.m {
+			if !yield(k, v) {
+				return
+			}
+		}
+	}
+}
+
+func (o *Obj) Put(k string, v Value) {
+	if o.m == nil {
+		o.m = make(map[string]Value)
+	}
+
+	o.m[k] = v
+}
+
+func (o *Obj) Get(k string) (Value, bool) {
+	v, ok := o.m[k]
+	return v, ok
+}
+
+func (*Obj) value() {}
+
+func (*Obj) objOrArr() {}
+
+func (o *Obj) String() string {
+	buf, err := json.MarshalIndent(o.m, "", "  ")
 	if err != nil {
 		return fmt.Sprintf("%#v", o)
 	}
@@ -83,23 +124,28 @@ func (o Obj) String() string {
 	return string(buf)
 }
 
-func (o Obj) Bool() bool {
-	return o != nil
+func (o *Obj) Bool() bool {
+	return o.m != nil
 }
 
-func (o Obj) Float64() float64 {
+func (o *Obj) Float64() float64 {
 	return 0
 }
 
-func (o Obj) UnmarshalJSON(bytes []byte) error {
+func (o *Obj) UnmarshalJSON(bytes []byte) error {
 	var tmp map[string]any
 	if err := json.Unmarshal(bytes, &tmp); err != nil {
 		return err
 	}
 
-	clear(o)
+	if o.m == nil {
+		o.m = map[string]Value{}
+	} else {
+		clear(o.m)
+	}
+
 	for k, v := range tmp {
-		o[k] = ValueOf(v)
+		o.m[k] = ValueOf(v)
 	}
 
 	return nil
@@ -227,11 +273,11 @@ func ValueOf(from any) Value {
 	case Value:
 		return t
 	case map[string]any:
-		obj := make(Obj)
+		var obj Obj
 		for k, v := range t {
-			obj[k] = ValueOf(v)
+			obj.Put(k, ValueOf(v))
 		}
-		return obj
+		return &obj
 	case []any:
 		arr := &Arr{}
 		for _, v := range t {

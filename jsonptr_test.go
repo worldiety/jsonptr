@@ -47,7 +47,7 @@ const testJSON2 = `
 `
 
 func TestEvaluate(t *testing.T) {
-	obj := Obj{}
+	obj := &Obj{}
 	err := json.Unmarshal([]byte(rfcTestJSON), &obj)
 	if err != nil {
 		t.Fatal(err)
@@ -84,7 +84,7 @@ func TestEvaluate(t *testing.T) {
 }
 
 func TestPrintErr(t *testing.T) {
-	obj := Obj{}
+	obj := &Obj{}
 	err := json.Unmarshal([]byte(testJSON2), &obj)
 	if err != nil {
 		t.Fatal(err)
@@ -113,7 +113,7 @@ func TestPrintErr(t *testing.T) {
 }
 
 func TestHelper(t *testing.T) {
-	obj := Obj{}
+	obj := &Obj{}
 	err := json.Unmarshal([]byte(testJSON2), &obj)
 	if err != nil {
 		t.Fatal(err)
@@ -155,7 +155,7 @@ func TestHelper(t *testing.T) {
 		t.Fatal("unexpected", arr.Get(1))
 	}
 
-	if v := MustEval(obj, "/details/nested").(Obj); len(v) != 3 {
+	if v := MustEval(obj, "/details/nested").(*Obj); v.Len() != 3 {
 		t.Fatal("unexpected", v)
 	}
 

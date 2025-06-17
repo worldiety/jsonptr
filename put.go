@@ -39,22 +39,22 @@ func Put(objOrArr ObjOrArr, ptr Ptr, value Value) error {
 		switch v := root.(type) {
 		case Primitive:
 			return fmt.Errorf("value '%s' is a primitive:\n%s", token, evalMsg(tIdx, tokens, nil))
-		case Obj:
+		case *Obj:
 			if leaf {
-				v[token] = value
+				v.Put(token, value)
 				return nil
 			} else {
 				// TODO to be correct we would need a recursive look ahead to decide if next value is object or array index
-				if x, ok := v[token]; ok {
+				if x, ok := v.Get(token); ok {
 					root = x
 				} else {
 					if nextMayBeArrayIdx {
 						root = &Arr{}
 					} else {
-						root = Obj{}
+						root = &Obj{}
 					}
 
-					v[token] = root
+					v.Put(token, root)
 				}
 
 			}
@@ -69,7 +69,7 @@ func Put(objOrArr ObjOrArr, ptr Ptr, value Value) error {
 					if nextMayBeArrayIdx {
 						root = &Arr{}
 					} else {
-						root = Obj{}
+						root = &Obj{}
 					}
 
 					v.Append(root)
@@ -84,7 +84,7 @@ func Put(objOrArr ObjOrArr, ptr Ptr, value Value) error {
 						if nextMayBeArrayIdx {
 							root = &Arr{}
 						} else {
-							root = Obj{}
+							root = &Obj{}
 						}
 
 						v.SetAt(int(idx), root)

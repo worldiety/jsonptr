@@ -40,12 +40,12 @@ func Eval(objOrArr ObjOrArr, ptr Ptr) (Value, error) {
 			return nil, fmt.Errorf("key '%s' not found:\n%s", token, evalMsg(tIdx, tokens, nil))
 		}
 		switch t := root.(type) {
-		case Obj:
-			if val, ok := t[token]; ok {
+		case *Obj:
+			if val, ok := t.Get(token); ok {
 				root = val
 			} else {
 				root = nil
-				return nil, fmt.Errorf("key '%s' not found:\n%s", token, evalMsg(tIdx, tokens, keysAsSlice(t)))
+				return nil, fmt.Errorf("key '%s' not found:\n%s", token, evalMsg(tIdx, tokens, t.Keys()))
 			}
 
 		case *Arr:
