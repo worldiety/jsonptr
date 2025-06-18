@@ -74,6 +74,10 @@ type Obj struct {
 	m map[string]Value
 }
 
+func NewObj(m map[string]Value) *Obj {
+	return &Obj{m: m}
+}
+
 func (o *Obj) Len() int {
 	return len(o.m)
 }
@@ -109,6 +113,17 @@ func (o *Obj) Put(k string, v Value) {
 func (o *Obj) Get(k string) (Value, bool) {
 	v, ok := o.m[k]
 	return v, ok
+}
+
+func (o *Obj) GetOr(k string, defaultValue Value) Value {
+	if defaultValue == nil {
+		defaultValue = Null{}
+	}
+	v, ok := o.m[k]
+	if !ok {
+		return defaultValue
+	}
+	return v
 }
 
 func (*Obj) value() {}
@@ -149,6 +164,10 @@ func (o *Obj) UnmarshalJSON(bytes []byte) error {
 	}
 
 	return nil
+}
+
+func (o *Obj) MarshalJSON() ([]byte, error) {
+	return json.Marshal(o.m)
 }
 
 type Arr struct {

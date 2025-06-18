@@ -192,3 +192,46 @@ func expectFloat64(t *testing.T, json ObjOrArr, ptr Ptr, val float64) {
 		t.Fatal("unexpected", v)
 	}
 }
+
+func TestSerde(t *testing.T) {
+	obj := &Obj{}
+	obj.Put("a", String("1"))
+	obj.Put("b", Number(2))
+	obj.Put("c", Null{})
+	obj.Put("d", NewArr(String("hello"), Number(42)))
+	obj.Put("e", NewObj(map[string]Value{
+		"x": String("1"),
+		"y": Number(42),
+		"z": NewObj(map[string]Value{
+			"pi": Number(3),
+		}),
+	}))
+
+	tmp, err := json.Marshal(obj)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var obj2 *Obj // note that the go unmarshaler needs a double pointer to work properly
+	if err := json.Unmarshal(tmp, &obj2); err != nil {
+		t.Fatal(err)
+	}
+
+	if v := obj2.GetOr("a", nil).String(); v != "1" {
+		t.Fatal("unexpected value", v)
+	}
+
+	if v := obj2.GetOr("b", nil).String(); v != "2" {
+		t.Fatal("unexpected value", v)
+	}
+
+	t.Log(string(tmp))
+
+	tmp2, err := json.Marshal(obj2)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if string(tmp2) != string(tmp) {
+		t.Fatal("expected\n", string(tmp), "but got\n", string(tmp2))
+	}
+}
