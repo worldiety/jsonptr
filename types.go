@@ -115,6 +115,14 @@ func (o *Obj) Get(k string) (Value, bool) {
 	return v, ok
 }
 
+func (o *Obj) Delete(k string) {
+	delete(o.m, k)
+}
+
+func (o *Obj) Clear() {
+	clear(o.m)
+}
+
 func (o *Obj) GetOr(k string, defaultValue Value) Value {
 	if defaultValue == nil {
 		defaultValue = Null{}
